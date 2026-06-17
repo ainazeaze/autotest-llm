@@ -18,7 +18,9 @@ def generate_dataset():
                 "content": f"Given the following Python function, write complete unit tests using pytest. Only output the test code, no explanation.\n\n```python\n{source}\n```",
             }
         ]
-        prompt = tokenizer.apply_chat_template(messages, add_generation_prompt=True)
+        prompt = tokenizer.apply_chat_template(
+            messages, add_generation_prompt=True, tokenize=False
+        )
 
         text = generate(model, tokenizer, prompt=prompt, verbose=True)
 
