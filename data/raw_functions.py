@@ -1,5 +1,5 @@
 """
-30 pure Python utility functions — no I/O, no external dependencies.
+60 pure Python utility functions — no I/O, no external dependencies.
 Covers: math, strings, sequences, dicts, type coercion, recursion, and more.
 """
 
@@ -268,3 +268,233 @@ def group_by(seq: Iterable[T], key: Callable[[T], Any]) -> dict[Any, list[T]]:
         k = key(item)
         result.setdefault(k, []).append(item)
     return result
+
+
+def clamp_int(value: int, lo: int, hi: int) -> int:
+    """Return *value* constrained to [lo, hi] (integer version)."""
+    return max(lo, min(value, hi))
+
+
+def sign(n: float) -> int:
+    """Return 1, -1, or 0 depending on the sign of *n*."""
+    if n > 0:
+        return 1
+    if n < 0:
+        return -1
+    return 0
+
+
+def gcd(a: int, b: int) -> int:
+    """Return the greatest common divisor of *a* and *b*."""
+    while b:
+        a, b = b, a % b
+    return abs(a)
+
+
+def lcm(a: int, b: int) -> int:
+    """Return the least common multiple of *a* and *b*."""
+    if a == 0 or b == 0:
+        return 0
+    return abs(a * b) // gcd(a, b)
+
+
+def is_power_of_two(n: int) -> bool:
+    """Return True if *n* is a positive power of two."""
+    return n > 0 and (n & (n - 1)) == 0
+
+
+def int_to_roman(num: int) -> str:
+    """Convert a positive integer (1-3999) to a Roman numeral string."""
+    val = [1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1]
+    syms = ["M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"]
+    result = ""
+    for i, v in enumerate(val):
+        while num >= v:
+            result += syms[i]
+            num -= v
+    return result
+
+
+def mean(numbers: list[float]) -> float:
+    """Return the arithmetic mean of *numbers*. Raises ValueError if empty."""
+    if not numbers:
+        raise ValueError("mean of empty sequence")
+    return sum(numbers) / len(numbers)
+
+
+def median(numbers: list[float]) -> float:
+    """Return the median of *numbers*. Raises ValueError if empty."""
+    if not numbers:
+        raise ValueError("median of empty sequence")
+    s = sorted(numbers)
+    mid = len(s) // 2
+    return s[mid] if len(s) % 2 else (s[mid - 1] + s[mid]) / 2
+
+
+def variance(numbers: list[float]) -> float:
+    """Return the population variance of *numbers*."""
+    if not numbers:
+        raise ValueError("variance of empty sequence")
+    m = mean(numbers)
+    return sum((x - m) ** 2 for x in numbers) / len(numbers)
+
+
+def binary_search(seq: list, target: Any) -> int:
+    """Return the index of *target* in sorted *seq*, or -1 if not found."""
+    lo, hi = 0, len(seq) - 1
+    while lo <= hi:
+        mid = (lo + hi) // 2
+        if seq[mid] == target:
+            return mid
+        elif seq[mid] < target:
+            lo = mid + 1
+        else:
+            hi = mid - 1
+    return -1
+
+
+def interleave(a: list[T], b: list[T]) -> list[T]:
+    """Interleave two lists element-by-element, appending leftovers."""
+    result: list[T] = []
+    for pair in zip(a, b):
+        result.extend(pair)
+    result.extend(a[len(b):])
+    result.extend(b[len(a):])
+    return result
+
+
+def sliding_window(seq: list[T], size: int) -> list[list[T]]:
+    """Return all consecutive sub-lists of length *size*."""
+    if size <= 0:
+        raise ValueError("size must be > 0")
+    return [seq[i: i + size] for i in range(len(seq) - size + 1)]
+
+
+def take_while(pred: Callable[[T], bool], seq: list[T]) -> list[T]:
+    """Return leading elements of *seq* for which *pred* is True."""
+    result: list[T] = []
+    for item in seq:
+        if not pred(item):
+            break
+        result.append(item)
+    return result
+
+
+def drop_while(pred: Callable[[T], bool], seq: list[T]) -> list[T]:
+    """Drop leading elements of *seq* while *pred* is True, return the rest."""
+    for i, item in enumerate(seq):
+        if not pred(item):
+            return seq[i:]
+    return []
+
+
+def partition(pred: Callable[[T], bool], seq: list[T]) -> tuple[list[T], list[T]]:
+    """Split *seq* into (items where pred is True, items where pred is False)."""
+    yes: list[T] = []
+    no: list[T] = []
+    for item in seq:
+        (yes if pred(item) else no).append(item)
+    return yes, no
+
+
+def count_occurrences(seq: list, target: Any) -> int:
+    """Count how many times *target* appears in *seq*."""
+    return sum(1 for item in seq if item == target)
+
+
+def snake_to_camel(name: str) -> str:
+    """Convert 'snake_case' to 'camelCase'."""
+    parts = name.split("_")
+    return parts[0] + "".join(p.capitalize() for p in parts[1:])
+
+
+def strip_prefix(text: str, prefix: str) -> str:
+    """Remove *prefix* from the start of *text* if present."""
+    if text.startswith(prefix):
+        return text[len(prefix):]
+    return text
+
+
+def strip_suffix(text: str, suffix: str) -> str:
+    """Remove *suffix* from the end of *text* if present."""
+    if suffix and text.endswith(suffix):
+        return text[: -len(suffix)]
+    return text
+
+
+def repeat_string(s: str, n: int) -> str:
+    """Return *s* repeated *n* times. Returns '' for n <= 0."""
+    return s * max(0, n)
+
+
+def center_text(text: str, width: int, fill: str = " ") -> str:
+    """Center *text* in a field of *width* characters using *fill*."""
+    return text.center(width, fill)
+
+
+def is_anagram(a: str, b: str) -> bool:
+    """Return True if *a* and *b* are anagrams (case-insensitive, ignores spaces)."""
+    clean = lambda s: sorted(s.lower().replace(" ", ""))
+    return clean(a) == clean(b)
+
+
+def longest_common_prefix(strings: list[str]) -> str:
+    """Return the longest common prefix shared by all strings in *strings*."""
+    if not strings:
+        return ""
+    prefix = strings[0]
+    for s in strings[1:]:
+        while not s.startswith(prefix):
+            prefix = prefix[:-1]
+            if not prefix:
+                return ""
+    return prefix
+
+
+def word_frequency(text: str) -> dict[str, int]:
+    """Return a dict mapping each word (lowercased) to its frequency in *text*."""
+    words = re.findall(r"[a-z]+", text.lower())
+    freq: dict[str, int] = {}
+    for w in words:
+        freq[w] = freq.get(w, 0) + 1
+    return freq
+
+
+def compress_spaces(text: str) -> str:
+    """Replace consecutive whitespace with a single space and strip ends."""
+    return re.sub(r"\s+", " ", text).strip()
+
+
+def safe_get(d: dict, *keys: str, default: Any = None) -> Any:
+    """Safely traverse nested dicts with a sequence of keys."""
+    current: Any = d
+    for key in keys:
+        if not isinstance(current, dict):
+            return default
+        current = current.get(key, default)
+    return current
+
+
+def omit(d: dict, *keys: str) -> dict:
+    """Return a copy of *d* without the specified keys."""
+    return {k: v for k, v in d.items() if k not in keys}
+
+
+def pick(d: dict, *keys: str) -> dict:
+    """Return a new dict with only the specified keys from *d*."""
+    return {k: d[k] for k in keys if k in d}
+
+
+def merge_lists(*lists: list) -> list:
+    """Concatenate any number of lists into one."""
+    result: list = []
+    for lst in lists:
+        result.extend(lst)
+    return result
+
+
+def transpose(matrix: list[list]) -> list[list]:
+    """Transpose a 2-D list (list of rows → list of columns)."""
+    if not matrix:
+        return []
+    return [list(row) for row in zip(*matrix)]
